@@ -1,6 +1,8 @@
 import io from "socket.io-client";
 
-const SOCKET_URL = import.meta.env.MODE === "development" ? "http://localhost:3001" : "/";
+const SOCKET_URL = import.meta.env.MODE === "development" 
+    ? "http://localhost:3001" 
+    : window.location.origin;
 
 let socket = null;
 
@@ -11,6 +13,9 @@ export const initializeSocket = (userId) => {
 
     socket = io(SOCKET_URL, {
         auth: { userId },
+        transports: ['websocket', 'polling'], // Enable fallback
+        timeout: 20000,
+        forceNew: true,
     });
 
     socket.on("connect", () => {
@@ -19,6 +24,10 @@ export const initializeSocket = (userId) => {
 
     socket.on("disconnect", () => {
         console.log("Disconnected from socket server");
+    });
+
+    socket.on("connect_error", (error) => {
+        console.error("Socket connection error:", error);
     });
 };
 
